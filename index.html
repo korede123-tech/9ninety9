@@ -1,138 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>WebAR Experience</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>WebAR Experience</title>
 
-  <!-- A-Frame + MindAR -->
-  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.5/dist/mindar-image.prod.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.5/dist/mindar-image-aframe.prod.js"></script>
+<script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      width: 100%;
-      height: 100%;
-      background: black;
-      font-family: Arial, sans-serif;
-    }
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    /* FIX: Must be transparent so we can see the camera video behind it */
+    background: transparent; 
+  }
 
-    a-scene {
-      position: fixed !important;
-      top: 0;
-      left: 0;
-      width: 100vw !important;
-      height: 100dvh !important; /* ensures full viewport on mobile */
-    }
+  a-scene {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100vw !important;
+    height: 100dvh !important;
+    z-index: 1; /* Ensure scene is above the video but below UI */
+  }
 
-    /* Loading Screen */
-    #loading-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100dvh;
-      background: #000;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      z-index: 999;
-    }
+  /* Loading screen */
+  #loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100dvh;
+    background: black;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 999;
+  }
+  .spinner {
+    width: 45px;
+    height: 45px;
+    border: 4px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 15px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-    .spinner {
-      width: 45px;
-      height: 45px;
-      border: 4px solid rgba(255,255,255,0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-bottom: 15px;
-    }
+  /* Scan hint */
+  #scan-hint {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    z-index: 10;
+    color: white;
+    font-weight: 600;
+    text-shadow: 0px 0px 6px black;
+  }
+  #target-preview {
+    width: 80px;
+    height: auto;
+    border: 2px solid #4cff4c;
+    border-radius: 6px;
+    opacity: 0.7;
+    display: inline-block;
+  }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* Scan hint positioned at bottom-right corner */
-    #scan-hint {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-      z-index: 10;
-      color: white;
-      font-weight: 600;
-      text-shadow: 0px 0px 6px black;
-    }
-
-    #target-preview {
-      width: 80px;
-      height: auto;
-      border: 2px solid #4cff4c;
-      border-radius: 6px;
-      opacity: 0.7;
-      display: inline-block;
-    }
-
-    /* Scanning overlay in center with hint image */
-    #scanner-overlay {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      width: 180px;
-      height: 180px;
-      transform: translate(-50%, -50%);
-      border: 2px dashed #4cff4c;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(76,255,76,0.6);
-      background: url('assets/mind/targets1.jpg') center/contain no-repeat;
-      opacity: 0.5;
-      animation: pulse 1.2s infinite;
-      pointer-events: none;
-      z-index: 5;
-    }
-
-    @keyframes pulse {
-      0% { box-shadow: 0 0 10px rgba(76,255,76,0.3); transform: translate(-50%, -50%) scale(1);}
-      50% { box-shadow: 0 0 25px rgba(76,255,76,0.7); transform: translate(-50%, -50%) scale(1.05);}
-      100% { box-shadow: 0 0 10px rgba(76,255,76,0.3); transform: translate(-50%, -50%) scale(1);}
-    }
-  </style>
+  /* Scanner overlay */
+  #scanner-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 140px;
+    height: 140px;
+    transform: translate(-50%, -50%);
+    border: 2px dashed #4cff4c;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(76,255,76,0.6);
+    background: url('assets/mind/targets1.jpg') center/contain no-repeat;
+    opacity: 0.5;
+    animation: pulse 1.2s infinite;
+    pointer-events: none;
+    z-index: 5;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 10px rgba(76,255,76,0.3); transform: translate(-50%, -50%) scale(1);}
+    50% { box-shadow: 0 0 25px rgba(76,255,76,0.7); transform: translate(-50%, -50%) scale(1.05);}
+    100% { box-shadow: 0 0 10px rgba(76,255,76,0.3); transform: translate(-50%, -50%) scale(1);}
+  }
+</style>
 </head>
 
 <body>
-  <!-- Loading screen -->
   <div id="loading-screen">
     <div class="spinner"></div>
     <div>Loading AR Experience…</div>
     <small style="opacity:0.7; margin-top:6px;">Allow camera access</small>
   </div>
 
-  <!-- Scan hint -->
   <div id="scan-hint">
     <span id="scan-text">Scanning for target…</span>
     <img id="target-preview" src="assets/mind/targets1.jpg" alt="Target Preview">
   </div>
 
-  <!-- Scanning overlay with hint -->
   <div id="scanner-overlay"></div>
 
-  <!-- AR Scene -->
   <a-scene
-    mindar-image="imageTargetSrc: assets/mind/targets1.mind;"
+    mindar-image="imageTargetSrc: assets/mind/targets1.mind; uiScanning: no;"
     color-space="sRGB"
     renderer="colorManagement: true; physicallyCorrectLights: true;"
     vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: true">
+    device-orientation-permission-ui="enabled: false">
 
     <a-assets>
       <video id="video101" src="assets/videos/video101.mp4" preload="auto" loop playsinline webkit-playsinline muted></video>
@@ -150,44 +140,44 @@
       </a-video>
     </a-entity>
 
-    <a-camera look-controls="enabled: false"></a-camera>
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
   </a-scene>
 
-  <script>
-    const loadingScreen = document.getElementById("loading-screen");
-    const scanText = document.getElementById("scan-text");
-    const targetPreview = document.getElementById("target-preview");
-    const scannerOverlay = document.getElementById("scanner-overlay");
-    const video = document.getElementById("video101");
-    const scene = document.querySelector('a-scene');
+<script>
+  const loadingScreen = document.getElementById("loading-screen");
+  const scanText = document.getElementById("scan-text");
+  const targetPreview = document.getElementById("target-preview");
+  const scannerOverlay = document.getElementById("scanner-overlay");
+  const video = document.getElementById("video101");
+  const scene = document.querySelector('a-scene');
 
-    // First-touch autoplay for mobile
-    document.body.addEventListener('click', () => {
-      video.play().catch(()=>{});
-    }, { once: true });
+  // Mobile first-touch autoplay
+  document.body.addEventListener('click', () => {
+    video.play().catch(()=>{});
+  }, { once: true });
 
-    // Hide loading screen after scene starts
-    scene.addEventListener("renderstart", () => {
-      loadingScreen.style.display = "none";
-      video.load();
-    });
+  // MindAR 1.2+ uses 'arReady' or just wait for render loop
+  scene.addEventListener("renderstart", () => {
+    // Force hide loading screen
+    loadingScreen.style.display = "none";
+  });
 
-    // MindAR target events
-    scene.addEventListener("targetFound", () => {
-      video.play().catch(()=>{});
-      scanText.innerText = "Image detected!";
-      scanText.style.color = "#4cff4c";
-      targetPreview.style.display = "none"; // hide hint
-      scannerOverlay.style.display = "none"; // hide overlay
-    });
+  // MindAR target events
+  scene.addEventListener("targetFound", () => {
+    video.play().catch(()=>{});
+    scanText.innerText = "Image detected!";
+    scanText.style.color = "#4cff4c";
+    targetPreview.style.display = "none";
+    scannerOverlay.style.display = "none";
+  });
 
-    scene.addEventListener("targetLost", () => {
-      video.pause();
-      scanText.innerText = "Scanning for target…";
-      scanText.style.color = "white";
-      targetPreview.style.display = "inline-block"; // show hint
-      scannerOverlay.style.display = "block"; // show overlay
-    });
-  </script>
+  scene.addEventListener("targetLost", () => {
+    video.pause();
+    scanText.innerText = "Scanning for target…";
+    scanText.style.color = "white";
+    targetPreview.style.display = "inline-block";
+    scannerOverlay.style.display = "block";
+  });
+</script>
 </body>
 </html>
