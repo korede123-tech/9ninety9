@@ -1,0 +1,19 @@
+{
+  "name": "webar-project",
+  "version": "1.0.0",
+  "description": "WebAR project with A-Frame + MindAR",
+  "main": "index.js",
+  "scripts": {
+    "dev": "live-server --port=8080 --watch=assets,index.html --https",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "live-server": "^1.2.2"
+  },
+  "dependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
