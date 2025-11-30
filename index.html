@@ -17,6 +17,16 @@
       overflow: hidden;
       background: black;
       font-family: Arial, sans-serif;
+      height: 100%;
+      width: 100%;
+    }
+
+    a-scene {
+      position: fixed !important;
+      top: 0;
+      left: 0;
+      width: 100vw !important;
+      height: 100vh !important;
     }
 
     /* Loading Screen */
@@ -95,7 +105,6 @@
       50% { box-shadow: 0 0 25px rgba(76,255,76,0.7); transform: translate(-50%, -50%) scale(1.05);}
       100% { box-shadow: 0 0 10px rgba(76,255,76,0.3); transform: translate(-50%, -50%) scale(1);}
     }
-
   </style>
 </head>
 
@@ -119,7 +128,6 @@
   <!-- AR Scene -->
   <a-scene
     mindar-image="imageTargetSrc: assets/mind/targets1.mind;"
-    embedded
     color-space="sRGB"
     renderer="colorManagement: true; physicallyCorrectLights: true;"
     vr-mode-ui="enabled: false"
@@ -134,7 +142,7 @@
         src="#video101"
         width="1.2"
         height="0.7"
-        position="0 0 0"
+        position="0 0 0.1"
         rotation="0 0 0"
         autoplay
         muted>
@@ -152,15 +160,20 @@
     const video = document.getElementById("video101");
     const scene = document.querySelector('a-scene');
 
+    // Mobile first-touch autoplay
+    document.body.addEventListener('click', () => {
+      video.play().catch(()=>{});
+    }, { once: true });
+
     // Hide loading screen after scene starts
     scene.addEventListener("renderstart", () => {
       loadingScreen.style.display = "none";
-      video.load(); // preload video for autoplay
+      video.load(); // preload video
     });
 
     // MindAR target events
     scene.addEventListener("targetFound", () => {
-      video.play().catch(()=>{}); // autoplay sometimes blocked on mobile until interaction
+      video.play().catch(()=>{});
       scanText.innerText = "Image detected!";
       scanText.style.color = "#4cff4c";
       targetPreview.style.display = "inline-block";
