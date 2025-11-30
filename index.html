@@ -9,7 +9,7 @@
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.5/dist/mindar-image.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.5/dist/mindar-image-aframe.prod.js"></script>
-  
+
   <style>
     body, html {
       margin: 0;
@@ -79,18 +79,19 @@
     #target-preview {
       width: 80px;
       height: auto;
-      display: none;
+      display: inline-block;
       border: 2px solid #4cff4c;
       border-radius: 6px;
+      opacity: 0.7;
     }
 
-    /* Pulsing scanning overlay */
+    /* Scanning overlay with hint image */
     #scanner-overlay {
       position: fixed;
       top: 50%;
       left: 50%;
-      width: 200px;
-      height: 200px;
+      width: 180px;
+      height: 180px;
       transform: translate(-50%, -50%);
       border: 2px dashed #4cff4c;
       border-radius: 10px;
@@ -98,6 +99,8 @@
       animation: pulse 1.2s infinite;
       pointer-events: none;
       z-index: 5;
+      background: url('assets/mind/targets1.png') center/contain no-repeat;
+      opacity: 0.5;
     }
 
     @keyframes pulse {
@@ -119,10 +122,10 @@
   <!-- Scan hint + target preview -->
   <div id="scan-hint">
     <span id="scan-text">Scanning for target…</span>
-    <img id="target-preview" src="assets/mind/targets1.png" alt="Target Preview">
+    <img id="target-preview" src="assets/mind/targets1.jpg" alt="Target Preview">
   </div>
 
-  <!-- Pulsing scanning overlay -->
+  <!-- Pulsing scanning overlay with hint -->
   <div id="scanner-overlay"></div>
 
   <!-- AR Scene -->
@@ -168,7 +171,7 @@
     // Hide loading screen after scene starts
     scene.addEventListener("renderstart", () => {
       loadingScreen.style.display = "none";
-      video.load(); // preload video
+      video.load();
     });
 
     // MindAR target events
@@ -176,7 +179,7 @@
       video.play().catch(()=>{});
       scanText.innerText = "Image detected!";
       scanText.style.color = "#4cff4c";
-      targetPreview.style.display = "inline-block";
+      targetPreview.style.display = "none"; // hide hint
       scannerOverlay.style.display = "none"; // hide scanning overlay
     });
 
@@ -184,7 +187,7 @@
       video.pause();
       scanText.innerText = "Scanning for target…";
       scanText.style.color = "white";
-      targetPreview.style.display = "none";
+      targetPreview.style.display = "inline-block"; // show hint
       scannerOverlay.style.display = "block"; // show scanning overlay
     });
   </script>
